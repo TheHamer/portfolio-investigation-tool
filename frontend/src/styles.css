@@ -1,0 +1,502 @@
+/* Intropic brand palette. Every colour in this file comes from these
+   variables; components use class names only. */
+:root {
+  --brand-black: #121212;
+  --brand-off-white: #f7f7f7;
+  --brand-purple: #aa99ff;
+  --brand-cyan: #5af5fa;
+  --brand-yellow: #faff50;
+  --brand-silver: #969696;
+
+  /* Dark theme built on the palette. */
+  --bg: var(--brand-black);
+  --surface: #1a1a1a;
+  --surface-raised: #222222;
+  --border: #2e2e2e;
+  --border-strong: #444444;
+  --row-hover: rgba(247, 247, 247, 0.03);
+  --overlay: rgba(0, 0, 0, 0.7);
+  --shadow: rgba(0, 0, 0, 0.6);
+  --text: var(--brand-off-white);
+  --muted: var(--brand-silver);
+  --accent: var(--brand-purple);
+  --accent-hover: #c2b6ff;
+  --accent-soft: rgba(170, 153, 255, 0.14);
+  --interactive: var(--brand-cyan);
+  --interactive-soft: rgba(90, 245, 250, 0.1);
+  --focus: var(--brand-cyan);
+  --attention: var(--brand-yellow);
+  --attention-soft: rgba(250, 255, 80, 0.1);
+
+  /* Gains and losses keep their green and red, lightened from the original
+     #157a3c and #b42318 so they stay readable on dark surfaces. */
+  --positive: #45c46e;
+  --negative: #ef5b4c;
+  --success-bg: rgba(69, 196, 110, 0.1);
+  --success-border: rgba(69, 196, 110, 0.45);
+  --error-bg: rgba(239, 91, 76, 0.1);
+  --error-border: rgba(239, 91, 76, 0.5);
+  --warning-bg: var(--attention-soft);
+  --warning-border: rgba(250, 255, 80, 0.4);
+
+  --radius: 8px;
+  color-scheme: dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--surface-raised);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.6rem;
+  line-height: 1.25;
+}
+h1 {
+  font-size: 1.4rem;
+}
+h2 {
+  font-size: 1.15rem;
+}
+h3 {
+  font-size: 1rem;
+  margin-top: 1.4rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Black header with a cyan accent line. */
+.app-header {
+  background: var(--brand-black);
+  border-bottom: 3px solid var(--brand-cyan);
+  color: var(--text);
+  padding: 1rem 0;
+  margin-bottom: 1.25rem;
+}
+.app-header p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.app-header strong {
+  color: var(--text);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.8rem;
+}
+.positive {
+  color: var(--positive);
+}
+.negative {
+  color: var(--negative);
+}
+
+/* Buttons: purple for the primary action, cyan outline for secondary ones. */
+.button {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--brand-black);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.button:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.button.secondary {
+  background: transparent;
+  border-color: var(--interactive);
+  color: var(--interactive);
+}
+.button.secondary:hover:not(:disabled) {
+  background: var(--interactive-soft);
+  border-color: var(--interactive);
+}
+.button.small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+}
+/* Row actions stay quiet so a long table is not a column of solid purple;
+   the selected row's button is filled. */
+td .button {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--accent);
+}
+td .button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+td .button[aria-pressed='true'],
+td .button[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--brand-black);
+}
+
+/* Upload */
+.upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+.file-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.file-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.file-picker input:focus-visible + .button {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.file-picker:hover .button.secondary {
+  background: var(--interactive-soft);
+}
+.file-name {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Alerts */
+.alert {
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  margin: 0.75rem 0;
+}
+.alert p {
+  margin: 0.4rem 0;
+}
+.alert.success {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  border-left-color: var(--positive);
+}
+.alert.error {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  border-left-color: var(--negative);
+}
+.alert.warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  border-left-color: var(--attention);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0.6rem 0;
+}
+.stats dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.stats dd {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Portfolio tabs */
+.portfolio-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tab {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.tab:hover {
+  border-color: var(--border-strong);
+}
+.tab.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.tab-name {
+  display: block;
+  font-weight: 600;
+}
+.tab-meta {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.portfolio-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.5rem;
+}
+.portfolio-heading h3 {
+  margin: 0;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+.summary-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+}
+.summary-card dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.summary-card dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.refreshing {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.empty {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 0.5rem 0;
+  background: var(--surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th,
+td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: var(--surface-raised);
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+tbody tr:hover td {
+  background: var(--row-hover);
+}
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+tr.selected td,
+tr.selected:hover td {
+  background: var(--accent-soft);
+}
+tr.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+tfoot td {
+  font-weight: 600;
+  background: var(--surface-raised);
+  border-top: 2px solid var(--border-strong);
+}
+tr.result td {
+  font-weight: 650;
+  background: var(--surface-raised);
+}
+td.unavailable {
+  color: var(--negative);
+}
+.ticker {
+  font-weight: 600;
+  white-space: nowrap;
+}
+ul.plain {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+/* Badges: neutral by default; yellow flags a carried-forward value. */
+.badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--surface-raised);
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.badge.warn {
+  background: var(--attention-soft);
+  border-color: var(--warning-border);
+  color: var(--attention);
+}
+
+.side {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.side.buy {
+  color: var(--positive);
+}
+.side.sell {
+  color: var(--negative);
+}
+
+/* Position investigation modal */
+body:has(.modal[open]) {
+  overflow: hidden;
+}
+.modal {
+  width: min(1200px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px var(--shadow);
+}
+.modal::backdrop {
+  background: var(--overlay);
+}
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h2 {
+  margin: 0;
+}
+.modal-body {
+  padding: 0.25rem 1.25rem 1.25rem;
+}
+.subtitle {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 1rem;
+  }
+  .summary-card dd {
+    font-size: 1.15rem;
+  }
+}

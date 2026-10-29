@@ -1,0 +1,17 @@
+# Container configuration. The Dockerfile copies this file to
+# /app/config.toml, the working directory of the runtime image.
+# INTROPIC_* environment variables (e.g. in docker-compose.yml) override it.
+# Every setting is described in config.toml.
+
+manifest_path = "/app/data/manifest.json"
+reference_data_dir = "/app/data/reference"
+
+# All interfaces, so the published port is reachable from the host.
+bind_addr = "0.0.0.0:8080"
+
+# The image contains the built React app; one process serves UI and API.
+static_dir = "/app/static"
+
+[persistence]
+# On the named volume mounted at /app/var, so trades survive restarts.
+database_path = "/app/var/portfolio.db"

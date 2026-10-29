@@ -1,0 +1,8 @@
+# Isolates the end-to-end smoke test from any existing deployment: its own
+# image tag and host port. The project name (-p pit-smoke) also gives it its
+# own database volume. Usage is in the README ("End-to-end smoke test").
+services:
+  app:
+    image: portfolio-investigation:smoke
+    ports: !override
+      - "18080:8080"

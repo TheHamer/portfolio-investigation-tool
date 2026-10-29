@@ -1,0 +1,7 @@
+# Normalise text files to LF so shell scripts, Dockerfiles and migrations
+# behave identically on Windows checkouts and inside Linux containers.
+* text=auto eol=lf
+
+# Supplied dataset: keep bytes exactly as delivered so the manifest's
+# SHA-256 checksums remain valid.
+data/** -text

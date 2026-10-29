@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/target
+frontend/dist
+**/var
+*.db
+*.db-shm
+*.db-wal
+.vscode
+.idea
+assessment-originals
+CANDIDATE_BRIEF.pdf

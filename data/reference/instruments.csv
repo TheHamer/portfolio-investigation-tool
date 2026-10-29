@@ -1,0 +1,25 @@
+instrument_id,ticker,name,currency,sector
+I001,ZZOLV01,Olvanta Dynamics (Fictional),USD,Energy
+I002,ZZTIN02,Tindrel Labs (Fictional),GBP,Consumer
+I003,ZZWEN03,Wendlecot Labs (Fictional),EUR,Financials
+I004,ZZZEP04,Zephlan Holdings (Fictional),EUR,Industrials
+I005,ZZFEN05,Fennimore Industries (Fictional),USD,Financials
+I006,ZZRIB06,Ribblecourt Dynamics (Fictional),EUR,Healthcare
+I007,ZZMOR07,Morvane Industries (Fictional),GBP,Technology
+I008,ZZPEL08,Pellworth Holdings (Fictional),USD,Technology
+I009,ZZLUM09,Luminth Holdings (Fictional),EUR,Financials
+I010,ZZSKA10,Skarvel Dynamics (Fictional),EUR,Financials
+I011,ZZQUI11,Quillfen Group (Fictional),GBP,Healthcare
+I012,ZZOXM12,Oxmoor Group (Fictional),USD,Financials
+I013,ZZSTR13,Stroud Vale Group (Fictional),USD,Technology
+I014,ZZCAR14,Carrowdyne Labs (Fictional),GBP,Financials
+I015,ZZKES15,Kestrine Group (Fictional),GBP,Healthcare
+I016,ZZVEL16,Veltrix Labs (Fictional),USD,Financials
+I017,ZZBRA17,Brasmoor Industries (Fictional),EUR,Industrials
+I018,ZZOTT18,Otterlane Dynamics (Fictional),USD,Industrials
+I019,ZZGLA19,"Glaskett, Lune & Partners (Fictional)",GBP,Financials
+I020,ZZHAR20,Harkaway Holdings (Fictional),EUR,Healthcare
+I021,ZZYAR21,Yarrowby Holdings (Fictional),GBP,Energy
+I022,ZZDRA22,Draxmere Group (Fictional),EUR,Industrials
+I023,ZZCOR23,Corvest Group (Fictional),GBP,Financials
+I024,ZZBRI24,Brindlemark Holdings (Fictional),USD,Technology

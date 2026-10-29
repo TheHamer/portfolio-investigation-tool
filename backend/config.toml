@@ -1,0 +1,52 @@
+# Local development configuration, read from the working directory when the
+# backend is started with `cargo run` from backend/. Relative paths are
+# resolved against that working directory.
+#
+# Any setting can be overridden with an environment variable named
+# INTROPIC_<SETTING IN UPPER CASE>, for example:
+#   INTROPIC_BIND_ADDR=0.0.0.0:8080
+#   INTROPIC_STATIC_DIR=../frontend/dist
+# Settings inside a section use a double underscore:
+#   INTROPIC_PERSISTENCE__MAX_CONNECTIONS=10
+#   INTROPIC_API__MAX_UPLOAD_BYTES=20971520
+#
+# Every top-level setting below is required (except static_dir), as is the
+# [persistence] section and its database_path. The four connection-pool
+# settings in [persistence] have defaults, and the [api] section is optional.
+
+# Supplied dataset (repository root data/): its manifest, and the directory
+# holding portfolios.csv, instruments.csv, prices.csv and fx_rates.csv.
+manifest_path = "../data/manifest.json"
+reference_data_dir = "../data/reference"
+
+bind_addr = "127.0.0.1:8080"
+
+# Left unset: API only. Run the Vite dev server in frontend/ (`npm run dev`),
+# which proxies /api to this backend.
+# Set: also serve the built React app from this directory (run `npm run build`
+# in frontend/ first; startup fails if static_dir/index.html is missing).
+# static_dir = "../frontend/dist"
+
+# Database settings (required section). database_path is required; the four
+# settings after it are optional, each defaulting independently to the value
+# shown.
+[persistence]
+# SQLite database file (required). Created, with its directory, if missing
+# and create_if_missing is true.
+database_path = "var/portfolio.db"
+# Maximum open connections in the pool.
+max_connections = 5
+# How long SQLite waits for a lock held by another connection before failing
+# with SQLITE_BUSY. 0 = fail immediately.
+busy_timeout_ms = 10000
+# How long a request waits for a free connection from the pool.
+acquire_timeout_ms = 30000
+# Create the database file and its directory if they do not exist.
+create_if_missing = true
+
+# API settings. This section is optional; each setting defaults to the value
+# shown.
+[api]
+# Largest accepted POST /api/trades/import request body, in bytes (10 MiB).
+# The whole multipart request counts, not just the CSV file. Must be > 0.
+max_upload_bytes = 10485760

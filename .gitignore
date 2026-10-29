@@ -1,0 +1,33 @@
+# Rust
+/backend/target/
+target/
+
+# Node / frontend
+node_modules/
+/frontend/dist/
+
+# Python (tools/)
+__pycache__/
+
+# Local SQLite databases (generated at runtime)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+var/
+
+# Environment and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+
+# Supplied assessment materials kept locally but not part of the submission.
+# The application and tests use the tracked data/ directory, not these files.
+/CANDIDATE_BRIEF.pdf
+/assessment-originals/

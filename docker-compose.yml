@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    image: portfolio-investigation:local
+    ports:
+      - "8080:8080"
+    volumes:
+      # SQLite database; survives container restarts and rebuilds.
+      - portfolio-data:/app/var
+    # Settings come from /app/config.toml in the image (backend/config.docker.toml).
+    # Override any of them here with INTROPIC_* variables, for example:
+    # environment:
+    #   INTROPIC_BIND_ADDR: "0.0.0.0:8080"
+
+volumes:
+  portfolio-data:
