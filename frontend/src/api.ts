@@ -102,11 +102,16 @@ export interface Breakdown {
   total_pnl_gbp_exact: string;
 }
 
+export type TradeSide = TradeLine['side'];
+
 export interface PositionDetailResponse {
   portfolio: Portfolio;
   as_of: string;
   position: PositionSummary;
   breakdown: Breakdown | null;
+  /** The side `trades` is narrowed to, or null for every trade. The position
+   * and breakdown always cover all trades. */
+  side: TradeSide | null;
   trades: TradeLine[];
 }
 
@@ -181,9 +186,11 @@ export const fetchPortfolios = () => getJson<PortfolioListResponse>('/api/portfo
 export const fetchPositions = (portfolioId: string) =>
   getJson<PortfolioPositionsResponse>(`/api/portfolios/${encodeURIComponent(portfolioId)}/positions`);
 
-export const fetchPositionDetail = (portfolioId: string, instrumentId: string) =>
+/** `side` filters only the listed trades, on the server. */
+export const fetchPositionDetail = (portfolioId: string, instrumentId: string, side: TradeSide | null = null) =>
   getJson<PositionDetailResponse>(
-    `/api/portfolios/${encodeURIComponent(portfolioId)}/positions/${encodeURIComponent(instrumentId)}`,
+    `/api/portfolios/${encodeURIComponent(portfolioId)}/positions/${encodeURIComponent(instrumentId)}` +
+      (side ? `?side=${side.toLowerCase()}` : ''),
   );
 
 /** Uploads a CSV. Both a successful import (200) and a rejected file (422)

@@ -19,7 +19,7 @@ mod portfolios;
 pub(super) use imports::ImportResponse;
 pub(super) use portfolios::{
     Breakdown, PortfolioListItem, PortfolioListResponse, PortfolioPositionsResponse,
-    PositionDetailResponse, PositionSummary, Status, Totals, TradeLine,
+    PositionDetailQuery, PositionDetailResponse, PositionSummary, Status, Totals, TradeLine,
 };
 
 use rust_decimal::Decimal;

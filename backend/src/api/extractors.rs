@@ -19,13 +19,16 @@
 //!
 //! `State` and `OriginalUri` cannot fail, so they are used unwrapped.
 
-use axum::extract::{Multipart, Path};
+use axum::extract::{Multipart, Path, Query};
 use axum_extra::extract::WithRejection;
 
 use super::error::ApiError;
 
 /// `Path<T>` whose rejection becomes `ApiError::InvalidPath`.
 pub type ApiPath<T> = WithRejection<Path<T>, ApiError>;
+
+/// `Query<T>` whose rejection becomes `ApiError::InvalidQuery`.
+pub type ApiQuery<T> = WithRejection<Query<T>, ApiError>;
 
 /// `Multipart` whose rejection (no valid `multipart/form-data` boundary)
 /// becomes `ApiError::NotMultipart`.

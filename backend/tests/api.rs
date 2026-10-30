@@ -294,6 +294,90 @@ async fn error_paths_report_unavailable_values_instead_of_panicking() {
     assert_eq!(position["status"], "unavailable");
 }
 
+/// `?side=` narrows only the listed trades, on both the valued and the
+/// unvalued path; the position is still valued from every trade.
+#[tokio::test]
+async fn side_filter_narrows_listed_trades_but_not_the_position() {
+    let dir = TempDir::new().unwrap();
+    let state = common::start(&dir).await;
+    let pool = state.pool.clone();
+    let app = build_router(state, None);
+    let header = "trade_id,portfolio_id,instrument_id,timestamp,side,quantity,price\n";
+
+    // P001 / I002 (GBP) is valued; P002 / I001 (USD) loses its FX coverage
+    // below; P001 / I003 has only a BUY.
+    let file = format!(
+        "{header}S1,P001,I002,2026-01-05T10:00:00Z,BUY,100,10\n\
+         S2,P001,I002,2026-01-05T11:00:00Z,SELL,40,15\n\
+         S3,P001,I002,2026-01-05T12:00:00Z,BUY,20,12\n\
+         U1,P002,I001,2026-01-05T10:00:00Z,BUY,10,100\n\
+         U2,P002,I001,2026-01-05T11:00:00Z,SELL,4,100\n\
+         B1,P001,I003,2026-01-05T10:00:00Z,BUY,7,100\n"
+    );
+    let (status, _) = send(&app, multipart_upload("sides.csv", file.as_bytes())).await;
+    assert_eq!(status, StatusCode::OK);
+
+    sqlx::query("DELETE FROM fx_rates WHERE currency = 'USD'")
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let listed = |detail: &Value, field: &str| -> Vec<Value> {
+        detail["trades"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t[field].clone())
+            .collect()
+    };
+
+    let (status, all) = get(&app, "/api/portfolios/P001/positions/I002").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(all["side"].is_null());
+    assert_eq!(listed(&all, "trade_id"), ["S1", "S2", "S3"]);
+
+    // Lower- and upper-case are both accepted. Running quantities and the
+    // position come from the full trade sequence.
+    let (status, buys) = get(&app, "/api/portfolios/P001/positions/I002?side=buy").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(buys["side"], "BUY");
+    assert_eq!(listed(&buys, "trade_id"), ["S1", "S3"]);
+    assert_eq!(listed(&buys, "running_quantity"), [100, 80]);
+    assert_eq!(buys["position"], all["position"]);
+    assert_eq!(buys["breakdown"], all["breakdown"]);
+
+    let (status, sells) = get(&app, "/api/portfolios/P001/positions/I002?side=SELL").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(sells["side"], "SELL");
+    assert_eq!(listed(&sells, "trade_id"), ["S2"]);
+    assert_eq!(listed(&sells, "running_quantity"), [60]);
+
+    // Unvalued position: the same filter applies to the uncalculated lines.
+    let (status, unvalued) = get(&app, "/api/portfolios/P002/positions/I001?side=sell").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(unvalued["position"]["status"], "unavailable");
+    assert_eq!(listed(&unvalued, "trade_id"), ["U2"]);
+    assert!(unvalued["trades"][0]["running_quantity"].is_null());
+
+    // A side with no trades is an empty list, not a missing position.
+    let (status, none) = get(&app, "/api/portfolios/P001/positions/I003?side=sell").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(none["trades"], Value::Array(vec![]));
+    assert_eq!(none["position"]["trade_count"], 1);
+
+    for uri in [
+        "/api/portfolios/P001/positions/I002?side=HOLD",
+        "/api/portfolios/P001/positions/I002?side=",
+        "/api/portfolios/P001/positions/I002?colour=red",
+    ] {
+        let (status, body) = get(&app, uri).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{uri}");
+        assert_eq!(body["error"]["code"], "bad_request", "{uri}");
+        let message = body["error"]["message"].as_str().unwrap();
+        assert!(message.starts_with("Invalid query parameter: "), "{uri}: {message}");
+    }
+}
+
 /// Closed means a net quantity of exactly zero, whether or not the position
 /// can be valued; an overflowed (null) quantity is open. The counts agree
 /// with the positions' `is_closed` flags.

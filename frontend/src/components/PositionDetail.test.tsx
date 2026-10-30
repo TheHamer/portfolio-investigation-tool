@@ -50,6 +50,7 @@ const CLOSED_WITHOUT_PRICE: PositionDetailResponse = {
     net_trade_cost_gbp_exact: '-24686.1645',
     total_pnl_gbp_exact: '24686.1645',
   },
+  side: null,
   trades: [
     {
       trade_id: 'T770892',

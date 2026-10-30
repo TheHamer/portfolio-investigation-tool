@@ -19,7 +19,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use chrono::NaiveDate;
 use sqlx::SqlitePool;
 
-use crate::domain::{Instrument, InstrumentId, Portfolio, PortfolioId, Trade};
+use crate::domain::{Instrument, InstrumentId, Portfolio, PortfolioId, Trade, TradeSide};
 use crate::persistence::PersistenceError;
 use crate::persistence::reference as reference_db;
 use crate::persistence::trades as trades_db;
@@ -58,8 +58,9 @@ pub struct PortfolioView {
 pub struct PositionView {
     pub portfolio: Portfolio,
     pub position: PositionResult,
-    /// The trades counted in `position`: those on or before the valuation
-    /// date, in `(timestamp, trade_id)` order.
+    /// The trades to display: those on or before the valuation date, in
+    /// `(timestamp, trade_id)` order, narrowed to one side when requested.
+    /// `position` is always valued from all trades regardless.
     pub trades: Vec<Trade>,
 }
 
@@ -209,11 +210,17 @@ pub async fn load_portfolio(
 /// missing portfolio or instrument, or a portfolio with no trades in the
 /// instrument on or before `as_of`, is a not-found error, so a position found
 /// here is exactly one that `load_portfolio` lists for the same date.
+///
+/// `side` narrows only the returned `trades` to BUY or SELL (`None` returns
+/// all). The position itself is always valued from every trade: a running
+/// average cost and quantity are meaningless on one side alone. A side with
+/// no trades yields an empty list, not a not-found error.
 pub async fn load_position(
     pool: &SqlitePool,
     as_of: NaiveDate,
     portfolio_id: &PortfolioId,
     instrument_id: &InstrumentId,
+    side: Option<TradeSide>,
 ) -> Result<PositionView, PortfolioError> {
     let portfolio = find_portfolio(pool, portfolio_id).await?;
     let instrument = reference_db::get_instrument(pool, instrument_id)
@@ -223,7 +230,7 @@ pub async fn load_position(
     let trades =
         trades_db::position_trades(pool, &portfolio.portfolio_id, &instrument.instrument_id)
             .await?;
-    let trades = trades_up_to(trades, as_of);
+    let mut trades = trades_up_to(trades, as_of);
     if trades.is_empty() {
         return Err(PortfolioError::PositionNotFound {
             portfolio_id: portfolio_id.clone(),
@@ -234,6 +241,12 @@ pub async fn load_position(
     let traded_instruments = HashSet::from([instrument.instrument_id.clone()]);
     let market = load_market_data(pool, &traded_instruments, as_of).await?;
     let position = build_position(instrument, &trades, as_of, &market);
+
+    // Filtered in memory after valuation: the trades are already loaded, and
+    // a single read keeps the listed trades a subset of those valued.
+    if let Some(side) = side {
+        trades.retain(|trade| trade.side == side);
+    }
 
     Ok(PositionView {
         portfolio,

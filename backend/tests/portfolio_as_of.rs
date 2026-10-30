@@ -62,6 +62,7 @@ async fn position_error(
         as_of,
         &portfolio(portfolio_id),
         &instrument(instrument_id),
+        None,
     )
     .await
     {
@@ -81,6 +82,7 @@ async fn position(
         as_of,
         &portfolio(portfolio_id),
         &instrument(instrument_id),
+        None,
     )
     .await
     {

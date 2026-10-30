@@ -1,10 +1,12 @@
 //! The portfolio list, positions and position-detail responses.
 
 use chrono::NaiveDate;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::{capitalise, exact};
-use crate::domain::{Currency, FxRate, InstrumentId, Portfolio, PortfolioId, Price, Trade};
+use crate::domain::{
+    Currency, FxRate, InstrumentId, Portfolio, PortfolioId, Price, Trade, TradeSide,
+};
 use crate::portfolio::PositionResult;
 use crate::valuation::{
     self, Observation, PortfolioTotals, PositionValuation, TradeContribution, format_money,
@@ -296,12 +298,42 @@ impl Breakdown {
     }
 }
 
+/// Query string of the position detail endpoint.
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(in crate::api) struct PositionDetailQuery {
+    /// `buy` or `sell`, also accepted as `BUY`/`Buy` and `SELL`/`Sell`;
+    /// absent means all trades.
+    side: Option<SideFilter>,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum SideFilter {
+    #[serde(alias = "BUY", alias = "Buy")]
+    Buy,
+    #[serde(alias = "SELL", alias = "Sell")]
+    Sell,
+}
+
+impl PositionDetailQuery {
+    pub(in crate::api) fn side(&self) -> Option<TradeSide> {
+        self.side.map(|s| match s {
+            SideFilter::Buy => TradeSide::Buy,
+            SideFilter::Sell => TradeSide::Sell,
+        })
+    }
+}
+
 #[derive(Serialize)]
 pub(in crate::api) struct PositionDetailResponse {
     pub(in crate::api) portfolio: PortfolioInfo,
     pub(in crate::api) as_of: NaiveDate,
     pub(in crate::api) position: PositionSummary,
     pub(in crate::api) breakdown: Option<Breakdown>,
+    /// The side filter applied to `trades` (`BUY` or `SELL`), or `None` when
+    /// every trade is listed. `position` and `breakdown` always cover all.
+    pub(in crate::api) side: Option<&'static str>,
     /// In `(timestamp, trade_id)` order.
     pub(in crate::api) trades: Vec<TradeLine>,
 }

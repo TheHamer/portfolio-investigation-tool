@@ -7,10 +7,10 @@ use crate::AppState;
 use crate::api::ApiError;
 use crate::api::dto::{
     Breakdown, PortfolioListItem, PortfolioListResponse, PortfolioPositionsResponse,
-    PositionDetailResponse, PositionSummary, Status, Totals, TradeLine,
+    PositionDetailQuery, PositionDetailResponse, PositionSummary, Status, Totals, TradeLine,
 };
-use crate::api::extractors::ApiPath;
-use crate::domain::{InstrumentId, PortfolioId};
+use crate::api::extractors::{ApiPath, ApiQuery};
+use crate::domain::{InstrumentId, PortfolioId, TradeSide};
 use crate::error::AppError;
 use crate::portfolio::{self, PositionView};
 
@@ -74,19 +74,23 @@ pub(in crate::api) async fn portfolio_positions(
 }
 
 /// `GET /api/portfolios/{portfolio_id}/positions/{instrument_id}`: one
-/// position with its calculation breakdown and underlying trades.
+/// position with its calculation breakdown and underlying trades. The optional
+/// `side=BUY|SELL` query parameter narrows only the listed trades; the
+/// position and breakdown still reflect every trade.
 pub(in crate::api) async fn position_detail(
     State(state): State<AppState>,
     path: ApiPath<(PortfolioId, InstrumentId)>,
+    query: ApiQuery<PositionDetailQuery>,
 ) -> Result<Json<PositionDetailResponse>, ApiError> {
     let Path((portfolio_id, instrument_id)) = path.into_inner();
+    let side = query.into_inner().0.side();
     let as_of = state.manifest.as_of();
 
     let PositionView {
         portfolio,
         position,
         trades,
-    } = portfolio::load_position(&state.pool, as_of, &portfolio_id, &instrument_id)
+    } = portfolio::load_position(&state.pool, as_of, &portfolio_id, &instrument_id, side)
         .await
         .map_err(AppError::from)?;
 
@@ -102,6 +106,7 @@ pub(in crate::api) async fn position_detail(
         Ok(v) => v
             .contributions
             .iter()
+            .filter(|c| side.is_none_or(|s| c.trade.side == s))
             .map(|c| TradeLine::calculated(c, currency))
             .collect(),
         Err(_) => trades
@@ -115,6 +120,7 @@ pub(in crate::api) async fn position_detail(
         as_of,
         position: PositionSummary::new(&position, as_of),
         breakdown,
+        side: side.map(TradeSide::as_str),
         trades: trade_lines,
     }))
 }

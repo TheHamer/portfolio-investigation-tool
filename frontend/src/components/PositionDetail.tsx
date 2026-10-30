@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Breakdown, PositionDetailResponse, TradeLine, fetchPositionDetail } from '../api';
+import { Breakdown, PositionDetailResponse, TradeLine, TradeSide, fetchPositionDetail } from '../api';
 import { formatGbp, formatQuantity, formatTimestamp, groupDigits, signClass } from '../format';
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 export function PositionDetail({ portfolioId, instrumentId, refreshKey, onClose }: Props) {
   const [data, setData] = useState<PositionDetailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [side, setSide] = useState<TradeSide | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
   // Open as a modal so the page underneath stays where it was.
@@ -20,19 +21,26 @@ export function PositionDetail({ portfolioId, instrumentId, refreshKey, onClose 
     if (d && !d.open) d.showModal();
   }, []);
 
+  // A different position starts from "Loading"; changing only the side
+  // filter keeps the current view until the filtered trades arrive.
+  useEffect(() => setData(null), [portfolioId, instrumentId, refreshKey]);
+
   useEffect(() => {
     let cancelled = false;
-    setData(null);
     setError(null);
 
-    fetchPositionDetail(portfolioId, instrumentId)
+    fetchPositionDetail(portfolioId, instrumentId, side)
       .then((response) => !cancelled && setData(response))
-      .catch((e: Error) => !cancelled && setError(e.message));
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setData(null);
+        setError(e.message);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [portfolioId, instrumentId, refreshKey]);
+  }, [portfolioId, instrumentId, refreshKey, side]);
 
   const p = data?.position;
 
@@ -104,6 +112,9 @@ export function PositionDetail({ portfolioId, instrumentId, refreshKey, onClose 
 
             <TradesTable
               trades={data.trades}
+              side={data.side}
+              onSideChange={setSide}
+              totalTrades={p.trade_count}
               currency={p.currency}
               breakdown={data.breakdown}
               netCost={p.net_trade_cost_gbp}
@@ -222,20 +233,46 @@ function ValuationBreakdown({
   );
 }
 
+const SIDE_FILTERS: { label: string; side: TradeSide | null }[] = [
+  { label: 'All', side: null },
+  { label: 'Buy', side: 'BUY' },
+  { label: 'Sell', side: 'SELL' },
+];
+
 function TradesTable({
   trades,
+  side,
+  onSideChange,
+  totalTrades,
   currency,
   breakdown,
   netCost,
 }: {
   trades: TradeLine[];
+  side: TradeSide | null;
+  onSideChange: (side: TradeSide | null) => void;
+  totalTrades: number;
   currency: string;
   breakdown: Breakdown | null;
   netCost: string | null;
 }) {
   return (
     <>
-      <h3>Underlying trades ({trades.length})</h3>
+      <h3>
+        Underlying trades ({side ? `${trades.length} of ${totalTrades}` : trades.length})
+      </h3>
+      <div className="side-filter" role="group" aria-label="Filter trades by side">
+        {SIDE_FILTERS.map((f) => (
+          <button
+            key={f.label}
+            className="button secondary small"
+            aria-pressed={side === f.side}
+            onClick={() => onSideChange(f.side)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
       <p className="muted small">
         In execution order. Signed cost (GBP) = signed quantity × execution price × FX rate on (or most recently before)
         the trade's UTC date. Historical trades are never revalued at today's FX rate.
@@ -289,7 +326,10 @@ function TradesTable({
           {breakdown && (
             <tfoot>
               <tr>
-                <td colSpan={7}>Totals (net trade cost summed from unrounded trade costs)</td>
+                <td colSpan={7}>
+                  {side ? 'Position totals across all trades' : 'Totals'} (net trade cost summed from unrounded trade
+                  costs)
+                </td>
                 <td className="num">{formatGbp(netCost)}</td>
                 <td className="num">{formatQuantity(breakdown.quantity)}</td>
               </tr>

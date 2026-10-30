@@ -441,6 +441,15 @@ ul.plain {
   font-weight: 600;
   font-size: 0.8rem;
 }
+.side-filter {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.side-filter .button[aria-pressed='true'] {
+  background: var(--interactive);
+  color: var(--brand-black);
+}
 .side.buy {
   color: var(--positive);
 }

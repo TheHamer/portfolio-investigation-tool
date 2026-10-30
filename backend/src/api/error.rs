@@ -2,7 +2,7 @@
 
 use axum::Json;
 use axum::extract::multipart::{MultipartError, MultipartRejection};
-use axum::extract::rejection::PathRejection;
+use axum::extract::rejection::{PathRejection, QueryRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
@@ -30,6 +30,9 @@ pub enum ApiError {
     /// A path parameter could not be extracted (`ApiPath`).
     #[error("Invalid request path: {0}")]
     InvalidPath(#[from] PathRejection),
+    /// A query parameter could not be parsed (`ApiQuery`), e.g. `side=HOLD`.
+    #[error("Invalid query parameter: {0}")]
+    InvalidQuery(#[from] QueryRejection),
     /// The upload request is not a multipart form (`ApiMultipart`).
     #[error("Expected a multipart form upload: {0}")]
     NotMultipart(#[from] MultipartRejection),
@@ -114,6 +117,7 @@ impl ApiError {
     fn status_and_code(&self) -> (StatusCode, &'static str) {
         match self {
             ApiError::InvalidPath(rejection) => classified(rejection.status()),
+            ApiError::InvalidQuery(rejection) => classified(rejection.status()),
             ApiError::NotMultipart(rejection) => classified(rejection.status()),
             ApiError::UnreadableUpload(error) => classified(error.status()),
             ApiError::MissingFile | ApiError::MultipleFiles => {
